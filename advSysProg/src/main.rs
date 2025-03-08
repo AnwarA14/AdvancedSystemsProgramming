@@ -16,7 +16,7 @@ fn dnslookup(domain: &str) {
     }
 }
 
-fn seqcom(domain: &str) {
+fn seqcon(domain: &str) {
     let addrs: Vec<_> = match (domain, 80).to_socket_addrs() {
         Ok(iter) => iter.collect(),
         Err(e) => {
@@ -109,7 +109,7 @@ fn main() {
 
     //dnslookup(domain);
 
-    //seqcom(domain);
+    //seqcon(domain);
 
     concon(domain);
 }
