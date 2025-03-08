@@ -16,8 +16,39 @@ fn dnslookup(domain: &str) {
     }
 }
 
-fn seqcom() {
-    
+fn seqcom(domain: &str) {
+    let addrs: Vec<_> = match (domain, 80).to_socket_addrs() {
+        Ok(iter) => iter.collect(),
+        Err(e) => {
+            println!("DNS lookup failed: {}", e);
+            return;
+        }
+    };
+
+    if addrs.is_empty() {
+        println!("No IP addresses were found for domain {}", domain);
+        return;
+    }
+
+    for addr in addrs {
+        match TcpStream::connect_timeout(&addr, Duration::from_secs(3)) {
+            Ok(mut stream) => {
+                println!("Connected to {}", addr);
+                let request = format!("GET / HTTP/1.1\r\nHost: {}\r\n\r\n", domain);
+                stream.write_all(request.as_bytes()).unwrap();
+                
+                let mut response = String::new();
+                stream.read_to_string(&mut response).unwrap();
+                println!("Response:\n{}", response);
+                return; 
+            }
+            Err(_) => continue,
+        }
+    }
+
+    println!("Failed to establish connection");
+
+
 }
 
 fn main() {
@@ -30,4 +61,6 @@ fn main() {
 
     let domain = &args[1];
     dnslookup(domain);
+
+    seqcom(domain);
 }
